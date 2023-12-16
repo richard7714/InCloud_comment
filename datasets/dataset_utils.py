@@ -63,13 +63,16 @@ def make_dataset(pickle_file):
   
     return dataset
 
+import sys
 
 def make_collate_fn(dataset: OxfordDataset, mink_quantization_size=None):
     # set_transform: the transform to be applied to all batch elements
     def collate_fn(data_list):
+        
         # Constructs a batch object
         clouds = [e[0] for e in data_list]
         labels = [e[1] for e in data_list]
+        
         batch = torch.stack(clouds, dim=0)       # Produces (batch_size, n_points, 3) tensor
         if dataset.set_transform is not None:
             # Apply the same transformation on all dataset elements
@@ -81,8 +84,11 @@ def make_collate_fn(dataset: OxfordDataset, mink_quantization_size=None):
         elif configs.model.name == 'logg3d':
             batch = sparcify_and_collate_list(clouds, mink_quantization_size)
         else:
+            # batch 내 각 pointcloud를 sparse_qunatize
             coords = [ME.utils.sparse_quantize(coordinates=e, quantization_size=mink_quantization_size)
                     for e in batch]
+            
+            # 다시 batch 화(?)
             coords = ME.utils.batched_coordinates(coords)
             # Assign a dummy feature equal to 1 to each point
             # Coords must be on CPU, features can be on GPU - see MinkowskiEngine documentation

@@ -11,10 +11,6 @@ from losses.loss_factory import make_pr_loss, make_inc_loss
 
 from torchpack.utils.config import configs 
 
-
-
-
-
 class TrainerIncremental:
     def __init__(self, logger, memory, old_environment_pickle, new_environment_pickle, pretrained_checkpoint, env_idx):
         # Initialise inputs
@@ -90,6 +86,7 @@ class TrainerIncremental:
 
         n_positives = torch.sum(positives_mask).item()
         n_negatives = torch.sum(negatives_mask).item()
+        
         if n_positives == 0 or n_negatives == 0:
             # Skip a batch without positives or negatives
             print('WARNING: Skipping batch without positive or negative examples')

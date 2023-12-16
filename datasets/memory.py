@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from torchpack.utils.config import configs
 import copy 
+import sys
 # class hold:
 #     def __init__(self):
 #         self.buffer_length = 256
@@ -22,6 +23,7 @@ import copy
 class Memory:
     def __init__(self):
         self.K = configs.train.memory.num_pairs
+
         self.train_tuples = []
         self.tuple_env_idx = [] # Records env tuples were stored from 
 
@@ -86,28 +88,36 @@ class Memory:
         env_replaced_idx = [] # List of replaced idx in the memory
         # Replace tuples 
         while(num_replaced < num_to_replace):
-            # Get new tuple pair to append to list 
+            # Get new tuple pair to append to list (맨앞에 있는 tuple을 anchor로 삼음)
             anchor_idx = new_tuples_idx.pop(0)
             if anchor_idx in selected_idx: # Skip if already been selected
                 continue 
+            
+            # anchor_idx번째 tuple 획득 
             anchor_tuple = new_tuples[anchor_idx]
+            
+            # anchor tuple의 positive 중에서 selected_idx에 없는 것들을 pair 가능성있는 것으로 선정
             pair_idx_possibilities = [x for x in anchor_tuple.positives if x not in selected_idx]
 
             # Check a valid positive pair is possible 
             if len(pair_idx_possibilities) == 0:
                 continue 
 
+            # pair 가능성이 있는 tuple 중 하나 선택
             pair_idx = random.choice(pair_idx_possibilities)
             pair_tuple = new_tuples[pair_idx]
 
+            # anchor와 pair idx를 추가하여 중복 방지
             selected_idx += [anchor_idx, pair_idx] # Prevent these being picked again
 
-            # Get replace idx 
-            if len(self.train_tuples) < self.K: # Just fill up if less than K pairs in memory
+            # Just fill up if less than K pairs in memory
+            if len(self.train_tuples) < self.K: 
                 self.train_tuples.append([anchor_tuple, pair_tuple])
                 self.tuple_env_idx.append(env_idx)
                 env_replaced_idx.append(len(self.train_tuples) - 1)
-            else: # Find and replace most represented environment
+                
+            # Find and replace most represented environment                
+            else: 
                 x = self.tuple_env_idx[self.tuple_env_idx != env_idx]
                 unique, counts = np.unique(x, return_counts = True)
                 replace_env = np.argmax(counts)
@@ -125,10 +135,10 @@ class Memory:
 
 # if __name__ == '__main__':
 #     mem = Memory()
-#     mem.update_memory('/scratch1/kni101/IncrementalDev/MinkLoc3D/pickles/oxford/training_queries_baseline.pickle', 0)
+#     mem.update_memory('/home/ma/git/project/iros2024/codes/incloud_comment/pickles/Oxford/Oxford_train_queries.pickle', 0)
 
 #     # Plotting 
-#     queries = pickle.load(open('/scratch1/kni101/IncrementalDev/MinkLoc3D/pickles/oxford/training_queries_baseline.pickle', 'rb'))
+#     queries = pickle.load(open('/home/ma/git/project/iros2024/codes/incloud_comment/pickles/Oxford/Oxford_train_queries.pickle', 'rb'))
 #     tuples = queries.values()
 #     x_all = [t.position[0] for t in tuples]
 #     y_all = [t.position[1] for t in tuples]

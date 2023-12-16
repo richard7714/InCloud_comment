@@ -10,7 +10,7 @@
 # conda activate MinkLoc3D # Replace with name of your environment
 
 # _ROOT='/home/ma/git/incloud_comment' # Replace with root of your MinkLoc3D 
-_ROOT='//home/ma/git/incloud_comment' # Replace with root of your MinkLoc3D 
+_ROOT='/home/ma/git/project/iros2024/codes/incloud_comment' # Replace with root of your MinkLoc3D 
 _SAVEDIR="${_ROOT}/results/InCloud_MinkLoc3D_Oxford_inhouse" # Replace with your save root 
 
 export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
@@ -21,7 +21,7 @@ cd $_ROOT
 python3 training/train_incremental.py  \
     --initial_ckpt 'weights/minkloc3d_baseline.pth' \
     --initial_environment 'pickles/Oxford/Oxford_train_queries.pickle' \
-    --incremental_environments 'pickles/In-house/In-house_train_queries.pickle' 'pickles/In-house/In-house_train_queries.pickle' \
+    --incremental_environments 'pickles/In-house/In-house_train_queries.pickle' \
     --config config/protocols/4-step.yaml \
     train.memory.num_pairs 256 \
     train.loss.incremental.name 'StructureAware' \

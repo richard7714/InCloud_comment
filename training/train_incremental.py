@@ -61,9 +61,8 @@ if __name__ == '__main__':
     # Update memory, metric tracker with env. 0
     memory.update_memory(args.initial_environment, env_idx = 0)
     metrics.update(configs.eval.initial_environment_result, env_idx = 0)
-    print('Done')
+    print("Done")
 
-    
     # Iterate over training steps
     old_env = args.initial_ckpt
     for env_idx, env in enumerate(args.incremental_environments):
@@ -86,7 +85,6 @@ if __name__ == '__main__':
         torch.save(old_ckpt, os.path.join(configs.save_dir, 'models', f'env_{env_idx + 1}.pth'))
 
         
-    
         # Update Memory 
         memory.update_memory(env, env_idx)
 

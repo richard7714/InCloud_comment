@@ -1,10 +1,9 @@
 import copy
 import itertools
+import pickle
 
+pickle_file = open("pickles/Oxford/Oxford_train_queries.pickle","rb")
 
-train_tuples = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-tuples = copy.deepcopy(list(itertools.chain.from_iterable(train_tuples)))
+data = pickle.load(pickle_file)
 
-print("1",itertools.chain.from_iterable(train_tuples))
-print("2",list(itertools.chain.from_iterable(train_tuples)))
-print("3",tuples)
+print(data[0].id)

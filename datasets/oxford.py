@@ -80,9 +80,6 @@ class OxfordDataset(Dataset):
 
 
 
-
-
-
 class TrainingTuple:
     # Tuple describing an element for training/validation
     def __init__(self, id: int, timestamp: int, rel_scan_filepath: str, positives: np.ndarray,

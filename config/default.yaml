@@ -2,7 +2,7 @@ save_dir: null
 debug: false
 data: 
   num_points: 4096
-  dataset_folder: /datasets/work/d61-eif/source/incrementalPointClouds
+  dataset_folder: /home/ma/git/project/iros2024/codes/incloud_comment/data
   aug_mode: 1
   pin_memory: false
 model: 
