@@ -111,7 +111,8 @@ def global_csv_to_northing_easting(csv_path, source_dir, save_dir):
 
 
 def process_MulRan(root, save_dir):
-    environments = ['DCC', 'RiverSide'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+    environments = ['DCC', 'Riverside'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+    # environments = ['DCC_01', 'RiverSide_01'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
     for env in environments:
         for run in os.listdir(os.path.join(root, env)): # ENV01, ENV02, ENV03
             print(os.path.join(save_dir, env, run, 'Ouster'))

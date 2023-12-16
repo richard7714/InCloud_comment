@@ -61,6 +61,7 @@ def construct_query_and_database_sets(base_path, folders, save_folder, file_exte
         df_locations = df_locations.rename(columns={'timestamp': 'file'})
         for index, row in df_locations.iterrows():
             # entire business district is in the test set
+            # test[len(test.keys())]를 이용해 dictionary의 append 연산 구현, 데이터가 쌓이도록
             if output_name == "business":
                 test[len(test.keys())] = {'query': row['file'], 'northing': row['northing'], 'easting': row['easting']}
             elif check_in_test_set(row['northing'], row['easting'], p):
@@ -117,6 +118,7 @@ if __name__ == '__main__':
 
     # Select runs used for evaluation
     for run in ['business', 'residential', 'university']:
+        # dataset folder 중 특정 keyword를 가진 folder만 가져오기
         folders = sorted([x for x in os.listdir(args.dataset_root) if run in x])
         p = test_regions[run]
         construct_query_and_database_sets(base_path, folders, args.save_folder, args.file_extension, p, run)

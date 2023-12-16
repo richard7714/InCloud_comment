@@ -12,6 +12,8 @@ from datasets.oxford import TrainingTuple
 # Import test set boundaries
 from generating_queries.Inhouse.generate_test import P5, P6, P7, P8, P9, P10, check_in_test_set
 
+import sys
+
 # Test set boundaries
 P = [P5, P6, P7, P8, P9, P10]
 
@@ -25,8 +27,10 @@ def construct_query_dict(df_centroids, save_folder, filename, ind_nn_r, ind_r_r)
     # Baseline dataset parameters in the original PointNetVLAD code: ind_nn_r=10, ind_r=50
     # Refined dataset parameters in the original PointNetVLAD code: ind_nn_r=12.5, ind_r=50
     tree = KDTree(df_centroids[['northing', 'easting']])
+    
     ind_nn = tree.query_radius(df_centroids[['northing', 'easting']], r=ind_nn_r)
     ind_r = tree.query_radius(df_centroids[['northing', 'easting']], r=ind_r_r)
+    
     queries = {}
     for anchor_ndx in tqdm(range(len(ind_nn))):
         anchor_pos = np.array(df_centroids.iloc[anchor_ndx][['northing', 'easting']])
@@ -82,8 +86,10 @@ if __name__ == '__main__':
         df_locations = df_locations.rename(columns={'timestamp': 'file'})
 
         for index, row in df_locations.iterrows():
+            # 특정 submap이 test_set으로 지정된 영역에 속하는 지 확인
             if check_in_test_set(row['northing'], row['easting'], P):
                 df_test = df_test.append(row, ignore_index=True)
+            # 안속하면 train_set으로 지정
             else:
                 df_train = df_train.append(row, ignore_index=True)
 

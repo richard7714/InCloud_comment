@@ -15,7 +15,6 @@ from trainer_incremental import TrainerIncremental
 from torch.utils.tensorboard import SummaryWriter
 
 
-
 if __name__ == '__main__':
 
     # Repeatability 
