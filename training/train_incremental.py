@@ -14,6 +14,7 @@ from trainer_incremental import TrainerIncremental
 
 from torch.utils.tensorboard import SummaryWriter
 
+import sys
 
 if __name__ == '__main__':
 
@@ -30,12 +31,14 @@ if __name__ == '__main__':
     parser.add_argument('--incremental_environments', type = str, required = True, nargs = '+', help = 'Pickles for incremental training step splits.  NOTE: Pass this argument before config to avoid it picking up opts')
 
     args, opts = parser.parse_known_args()
+    
+    # default.yaml loaded, 2 or 4-step yaml overrided
     configs.load(args.config, recursive = True)
     configs.update(opts)
     if isinstance(configs.train.optimizer.scheduler_milestones, str):
         configs.train.optimizer.scheduler_milestones = [int(x) for x in configs.train.optimizer.scheduler_milestones.split(',')] # Allow for passing multiple drop epochs to scheduler
     print(configs)
-
+    
     # Make save directory and logger
     if not os.path.exists(configs.save_dir):
         os.makedirs(configs.save_dir)
@@ -43,7 +46,6 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(configs.save_dir, 'models'))
     logger = SummaryWriter(os.path.join(configs.save_dir, 'tf_logs'))
     
-
     # Load and save initial checkpoint
     print('Loading Initial Checkpoint: ', end = '')
     assert os.path.exists(args.initial_ckpt), f'Initial Checkpoint at {args.initial_ckpt} should not be none'
