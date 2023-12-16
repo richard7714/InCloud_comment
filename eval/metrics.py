@@ -17,7 +17,7 @@ class IncrementalTracker:
             if k not in self.seen_envs:
                 self.seen_envs.append(k)
                 
-                # 처음본 환경 == 가장 최근 환경
+                # 가장 최근으로 관측된 환경의 성능 저장
                 self.most_recent[k] = v  
                 
                 self.greatest_past[k] = np.nan 
@@ -51,7 +51,6 @@ class IncrementalTracker:
         for v in self.start_indexes.values():
             # v번째에 맞는 환경을 가져오기
             merge_keys = [k for k in self.start_indexes if self.start_indexes[k] == v] # Get keys which should be merged 
-            print("merge_keys : ", merge_keys)
             # indexing 없이 원소만 빼내려고 이렇게 하는듯? + str변환
             new_key = '/'.join(merge_keys) # Get new key 
             merged_recall = np.mean([results[m]['Recall@1'] for m in merge_keys])
@@ -75,9 +74,13 @@ if __name__ == '__main__':
     metrics = IncrementalTracker()
 
     metrics.update(step_0, 0)
+    print(metrics.most_recent)
     metrics.update(step_1, 1)
+    print(metrics.most_recent)
     metrics.update(step_2, 2)
+    print(metrics.most_recent)
     metrics.update(step_3, 3)
+    print(metrics.most_recent)
 
     r = metrics.get_results()
     print(r)

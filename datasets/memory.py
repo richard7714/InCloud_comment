@@ -29,9 +29,9 @@ class Memory:
         return len(self.train_tuples)
 
     def get_tuples(self, new_dataset_len = 0):
+        # [[~],[~],[~]] 로 구성된 array를 하나의 list로 만듬
         tuples = copy.deepcopy(list(itertools.chain.from_iterable(self.train_tuples)))
 
-    
         # Adjust id, positives, non_negatives to match dataset we'll be appending to 
         for t in tuples:
             t.id = t.id + new_dataset_len
