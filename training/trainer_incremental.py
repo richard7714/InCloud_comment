@@ -10,6 +10,7 @@ from datasets.dataset_utils import make_dataloader
 from losses.loss_factory import make_pr_loss, make_inc_loss
 
 from torchpack.utils.config import configs 
+import sys
 
 class TrainerIncremental:
     def __init__(self, logger, memory, old_environment_pickle, new_environment_pickle, pretrained_checkpoint, env_idx):
@@ -88,7 +89,7 @@ class TrainerIncremental:
         # MinkowskiEngine에서 coordinate는 cpu에, feature는 gpu에 있어야 함. 그 과정임
         batch = {x: batch[x].to('cuda') if x!= 'coords' else batch[x] for x in batch}
 
-        # mask의 개수를 세면 positive, negative의 개수를 알 수 있다.
+        # mask내 true 개수를 세면 positive, negative의 개수를 알 수 있다.
         n_positives = torch.sum(positives_mask).item()
         n_negatives = torch.sum(negatives_mask).item()
         
@@ -108,6 +109,8 @@ class TrainerIncremental:
             loss_incremental = self.loss_fn_inc(embeddings_old, embeddings_new)
         else:
             loss_incremental = self.loss_fn_inc(self.model_new, self.old_parameters, self.fisher_matrix)
+        
+        # optim 총합
         loss_total = loss_place_rec + loss_incremental
 
         # Backwards
@@ -142,8 +145,6 @@ class TrainerIncremental:
         self.logger.add_scalar(f'Step_{self.env_idx}/Incremental_Loss', self.loss_inc_meter.avg, epoch)
         self.logger.add_scalar(f'Step_{self.env_idx}/Non_Zero_Triplets', self.non_zero_triplets_meter.avg, epoch)
         self.logger.add_scalar(f'Step_{self.env_idx}/Embedding_Norm', self.embedding_norm_meter.avg, epoch)
-
-
 
 
     def train(self):

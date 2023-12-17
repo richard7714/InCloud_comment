@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F 
 from torchpack.utils.config import configs 
 from tqdm import tqdm 
-
+import sys
 class NoIncLoss:
     def __init__(self):
         pass 
@@ -49,17 +49,25 @@ class StructureAware:
         else:
             pass 
 
+    # old embeddings, new_embeddings
     def __call__(self, old_rep, new_rep):
         with torch.no_grad():
-            old_vec = old_rep.unsqueeze(0) - old_rep.unsqueeze(1) # B x D x D
+            
+            # batch내 pair의 모든 경우의 수에 대한 차 계산
+            old_vec = old_rep.unsqueeze(0) - old_rep.unsqueeze(1) # B x D x D (broadcasting)
             norm_old_vec = F.normalize(old_vec, p = 2, dim = 2)
+            
+            # 각 point가 anchor가 될때, 모든 경우의 angle 값 계산            
             old_angles = torch.bmm(norm_old_vec, norm_old_vec.transpose(1,2)).view(-1)
 
         new_vec = new_rep.unsqueeze(0) - new_rep.unsqueeze(1)
         norm_new_vec = F.normalize(new_vec, p = 2, dim = 2)
         new_angles = torch.bmm(norm_new_vec, norm_new_vec.transpose(1,2)).view(-1)
 
+        # huber loss
         loss_incremental = F.smooth_l1_loss(new_angles, old_angles, reduction = 'none')
+        
+        # hinge loss
         loss_incremental = F.relu(loss_incremental - self.margin)
 
         # Remove 0 terms from loss which emerge due to margin 
@@ -67,6 +75,7 @@ class StructureAware:
         if torch.any(loss_incremental > 0):
             loss_incremental = loss_incremental[loss_incremental > 0]
 
+        # loss의 평균에 weight를 곱해 최종 incremental loss로 사용
         loss_incremental = self.weight * loss_incremental.mean()
         return loss_incremental
 

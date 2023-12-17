@@ -6,9 +6,7 @@ import torch
 from pytorch_metric_learning import losses, miners, reducers
 from pytorch_metric_learning.distances import LpDistance
 
-
-
-
+import sys
 
 class HardTripletMinerWithMasks:
     # Hard triplet miner
@@ -30,14 +28,26 @@ class HardTripletMinerWithMasks:
         return hard_triplets
 
     def mine(self, embeddings, positives_mask, negatives_mask):
+        
         # Based on pytorch-metric-learning implementation
         dist_mat = self.distance(embeddings)
+
+        # 각 row에서 distance가 가장 큰 positive를 찾음 => hardest positive
         (hardest_positive_dist, hardest_positive_indices), a1p_keep = get_max_per_row(dist_mat, positives_mask)
+        
+        # 각 row에서 distance가 가장 작은 negative를 찾음 => hardest negative
         (hardest_negative_dist, hardest_negative_indices), a2n_keep = get_min_per_row(dist_mat, negatives_mask)
+        
+        # positive, negative 둘 다 존재하는 row만 남김
         a_keep_idx = torch.where(a1p_keep & a2n_keep)
+        
+        # TODO 왜이렇게하지?
         a = torch.arange(dist_mat.size(0)).to(hardest_positive_indices.device)[a_keep_idx]
+        
+        # keep_idx에 해당하는 pos,neg만 남김
         p = hardest_positive_indices[a_keep_idx]
         n = hardest_negative_indices[a_keep_idx]
+        
         self.max_pos_pair_dist = torch.max(hardest_positive_dist).item()
         self.max_neg_pair_dist = torch.max(hardest_negative_dist).item()
         self.mean_pos_pair_dist = torch.mean(hardest_positive_dist).item()
@@ -48,16 +58,26 @@ class HardTripletMinerWithMasks:
 
 
 def get_max_per_row(mat, mask):
+    # 각 row에서 True가 하나라도 있으면 true
     non_zero_rows = torch.any(mask, dim=1)
     mat_masked = mat.clone()
+    
+    # Mask가 False인 곳은 다 0으로 입력
     mat_masked[~mask] = 0
+    
+    # 각 row에서 가장 큰 값과 그 index를 반환
     return torch.max(mat_masked, dim=1), non_zero_rows
 
 
 def get_min_per_row(mat, mask):
+    # 각 row에서 True가 하나라도 있으면 true
     non_inf_rows = torch.any(mask, dim=1)
+    
+    # Mask가 False인 곳은 다 infinity 입력
     mat_masked = mat.clone()
     mat_masked[~mask] = float('inf')
+    
+    # 각 row에서 가장 작은 값과 그 index를 반환
     return torch.min(mat_masked, dim=1), non_inf_rows
 
 
@@ -75,6 +95,8 @@ class BatchHardTripletLossWithMasks:
     def __call__(self, embeddings, positives_mask, negatives_mask):
         hard_triplets = self.miner_fn(embeddings, positives_mask, negatives_mask)
         dummy_labels = torch.arange(embeddings.shape[0]).to(embeddings.device)
+        
+        # embeddings, labels, miner_output
         loss = self.loss_fn(embeddings, dummy_labels, hard_triplets)
         stats = {'loss': loss.item(), 'avg_embedding_norm': self.loss_fn.distance.final_avg_query_norm,
                  'num_non_zero_triplets': self.loss_fn.reducer.triplets_past_filter,
