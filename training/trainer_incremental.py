@@ -32,6 +32,8 @@ class TrainerIncremental:
 
         # Build models and init from pretrained_checkpoint
         assert torch.cuda.is_available, 'CUDA not available.  Make sure CUDA is enabled and available for PyTorch'
+        
+        # config에 따라 learning model 생성
         self.model_frozen = model_factory(ckpt = pretrained_checkpoint, device = 'cuda')
         self.model_new = model_factory(ckpt = pretrained_checkpoint, device = 'cuda')
 
@@ -82,8 +84,11 @@ class TrainerIncremental:
         
         # Prepare batch
         batch_stats = {}
+        
+        # MinkowskiEngine에서 coordinate는 cpu에, feature는 gpu에 있어야 함. 그 과정임
         batch = {x: batch[x].to('cuda') if x!= 'coords' else batch[x] for x in batch}
 
+        # mask의 개수를 세면 positive, negative의 개수를 알 수 있다.
         n_positives = torch.sum(positives_mask).item()
         n_negatives = torch.sum(negatives_mask).item()
         

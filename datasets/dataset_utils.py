@@ -71,6 +71,8 @@ def make_collate_fn(dataset: OxfordDataset, mink_quantization_size=None):
         
         # Constructs a batch object
         clouds = [e[0] for e in data_list]
+        
+        # 몇번째 cloud인지?
         labels = [e[1] for e in data_list]
         
         batch = torch.stack(clouds, dim=0)       # Produces (batch_size, n_points, 3) tensor
@@ -97,10 +99,12 @@ def make_collate_fn(dataset: OxfordDataset, mink_quantization_size=None):
 
         # Compute positives and negatives mask
         # Compute positives and negatives mask
+        # batch_size x batch_size boolean tensors (batch내 elem 끼리 비교했으므로) 
         positives_mask = [[in_sorted_array(e, dataset.queries[label].positives) for e in labels] for label in labels]
         negatives_mask = [[not in_sorted_array(e, dataset.queries[label].non_negatives) for e in labels] for label in labels]
         positives_mask = torch.tensor(positives_mask)
         negatives_mask = torch.tensor(negatives_mask)
+        
 
         # Returns (batch_size, n_points, 3) tensor and positives_mask and
         # negatives_mask which are batch_size x batch_size boolean tensors
