@@ -7,6 +7,7 @@ import open3d as o3d
 from tqdm import tqdm 
 from glob import glob 
 import multiprocessing as mp 
+import sys
 
 np.random.seed(0)
 
@@ -33,7 +34,8 @@ def downsample_point_cloud(xyzr, voxel_size=0.05):
     ds_reflectances = np.asarray(xyzr[:, 3])[inv_ids]
     return np.hstack((pcd_ds.points, ds_reflectances.reshape(-1,1)))
 
-def pnv_preprocessing(xyzr, num_points = 4096, vox_sz = 0.3, dist_thresh = 25):
+# vox_sz = 0.3
+def pnv_preprocessing(xyzr, num_points = 4096, vox_sz = 0.1, dist_thresh = 25):
 
     # Cut off points past dist_thresh
     dist = np.linalg.norm(xyzr[:,:3], axis=1)
@@ -45,6 +47,7 @@ def pnv_preprocessing(xyzr, num_points = 4096, vox_sz = 0.3, dist_thresh = 25):
       vox_sz += 0.01
     # Re-sample some points to bring to num_points if under num_points 
     ind = np.arange(xyzr.shape[0])
+        
     if num_points - len(ind) > 0:
         extra_points_ind = np.random.choice(xyzr.shape[0], num_points - len(ind), replace = False)
         ind = np.concatenate([ind, extra_points_ind])
@@ -73,26 +76,33 @@ def get_pointcloud_tensor(xyzr):
 
     # Remove ground plane and pre-process  
     xyzr = remove_ground_plane(xyzr)
-    xyzr = pnv_preprocessing(xyzr)
+    xyzr = pnv_preprocessing(xyzr,dist_thresh=80)
 
     return xyzr
 
+os_data_format = {
+    'Aeva' : [('x', np.float32), ('y', np.float32), ('z', np.float32), ('reflectivity', np.float32), ('velocity', np.float32), ('time_offset_ns', np.int32), ('line_index', np.uint8)],
+    'Avia' : [('x', np.float32), ('y', np.float32), ('z', np.float32), ('reflectivity', np.uint8), ('tag', np.uint8), ('line', np.uint8), ('offset_time', np.uint32)],
+    'Ouster' : [('x', np.float32), ('y', np.float32), ('z', np.float32),('intensity', np.float32), ('time', np.uint32), ('reflectivity', np.uint16), ('ring', np.uint16), ('ambient', np.uint16)],
+    'Velodyne' : [('x', np.float32), ('y', np.float32), ('z', np.float32), ('intensity', np.float32), ('ring', np.uint16), ('time', np.float32)]}
+
 def process_pointcloud(ARGS):
-    pc_path, source_dir, save_dir = ARGS 
-    
-    # 원본
-    xyzr = np.fromfile(pc_path, dtype = np.float32).reshape(-1,4)
-    
+    pc_path, source_dir, save_dir,env = ARGS 
+ 
+    scan = np.fromfile(pc_path, dtype=os_data_format[env])
+    xyzr = np.stack((scan['x'], scan['y'], scan['z'], scan['reflectivity' if env in ['Aeva','Avia'] else 'intensity']), axis = -1)
+        
+    # xyzr = np.fromfile(pc_path, dtype = np.float32).reshape(-1,4)
     if len(xyzr) == 0:
         return None  
     xyzr = get_pointcloud_tensor(xyzr)
     save_path = pc_path.replace(source_dir, save_dir).split('.')[0]
     np.save(save_path, xyzr)
 
-def multiprocessing_preprocessing(run, source_dir, save_dir):
+def multiprocessing_preprocessing(run, source_dir, save_dir,env):
     # Prepare inputs 
-    clouds_raw = sorted(glob(os.path.join(run, 'Ouster', '*')))
-    ARGS = [[c, source_dir, save_dir] for c in clouds_raw]
+    clouds_raw = sorted(glob(os.path.join(run, 'lidar', '*')))
+    ARGS = [[c, source_dir, save_dir,env] for c in clouds_raw]
 
     # Multiprocessing the pre-processing 
     with mp.Pool(32) as p:
@@ -100,11 +110,11 @@ def multiprocessing_preprocessing(run, source_dir, save_dir):
 
 def global_csv_to_northing_easting(csv_path, source_dir, save_dir):
     df = pd.DataFrame(columns = ['timestamp', 'northing', 'easting'])
-    scan_timestamps = sorted([x.split('.')[0] for x in os.listdir(os.path.join(os.path.dirname(csv_path), 'Ouster'))])
+    scan_timestamps = sorted([x.split('.')[0] for x in os.listdir(os.path.join(os.path.dirname(csv_path), 'lidar'))])
     with open(csv_path, 'r') as f:
         reader = csv.reader(f, delimiter = ',')
         for idx, row in tqdm(enumerate(reader)):
-            new_row = [scan_timestamps[idx], row[4], row[8]]
+            new_row = [scan_timestamps[idx], row[1], row[2]]
             df.loc[idx] = new_row 
 
     # Save new dataframe 
@@ -114,15 +124,17 @@ def global_csv_to_northing_easting(csv_path, source_dir, save_dir):
 
 
 def process_MulRan(root, save_dir):
-    environments = ['DCC', 'Riverside'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+    # environments = ['Aeva', 'Avia','Ouster','Velodyne'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+    environments = ['Aeva', 'Avia','Velodyne'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+
     # environments = ['DCC_01', 'RiverSide_01'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
     for env in environments:
         for run in os.listdir(os.path.join(root, env)): # ENV01, ENV02, ENV03
-            print(os.path.join(save_dir, env, run, 'Ouster'))
-            if not os.path.exists(os.path.join(save_dir, env, run, 'Ouster')):
-                os.makedirs(os.path.join(save_dir, env, run, 'Ouster'))
-            global_csv_to_northing_easting(os.path.join(root, env, run, 'scan_poses.csv'), root, save_dir)
-            multiprocessing_preprocessing(os.path.join(root, env, run), root, save_dir)
+            print(os.path.join(save_dir, env, run, 'lidar'))
+            if not os.path.exists(os.path.join(save_dir, env, run, 'lidar')):
+                os.makedirs(os.path.join(save_dir, env, run, 'lidar'))
+            # global_csv_to_northing_easting(os.path.join(root, env, run, 'scan_poses.csv'), root, save_dir)
+            multiprocessing_preprocessing(os.path.join(root, env, run), root, save_dir,env)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
