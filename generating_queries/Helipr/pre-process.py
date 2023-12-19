@@ -49,6 +49,9 @@ def pnv_preprocessing(xyzr, num_points = 4096, vox_sz = 0.1, dist_thresh = 25):
     ind = np.arange(xyzr.shape[0])
         
     if num_points - len(ind) > 0:
+        print(f"ds num : {len(ind)}, extra num : {num_points - len(ind)}")
+        if(len(ind) < (num_points - len(ind))):
+            np.save("tgt_pcd.npy", xyzr)
         extra_points_ind = np.random.choice(xyzr.shape[0], num_points - len(ind), replace = False)
         ind = np.concatenate([ind, extra_points_ind])
     xyzr = xyzr[ind,:]
@@ -125,7 +128,7 @@ def global_csv_to_northing_easting(csv_path, source_dir, save_dir):
 
 def process_MulRan(root, save_dir):
     # environments = ['Aeva', 'Avia','Ouster','Velodyne'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
-    environments = ['Aeva', 'Avia','Velodyne'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+    environments = ['Avia'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
 
     # environments = ['DCC_01', 'RiverSide_01'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
     for env in environments:
@@ -133,7 +136,7 @@ def process_MulRan(root, save_dir):
             print(os.path.join(save_dir, env, run, 'lidar'))
             if not os.path.exists(os.path.join(save_dir, env, run, 'lidar')):
                 os.makedirs(os.path.join(save_dir, env, run, 'lidar'))
-            # global_csv_to_northing_easting(os.path.join(root, env, run, 'scan_poses.csv'), root, save_dir)
+            global_csv_to_northing_easting(os.path.join(root, env, run, 'scan_poses.csv'), root, save_dir)
             multiprocessing_preprocessing(os.path.join(root, env, run), root, save_dir,env)
 
 if __name__ == '__main__':

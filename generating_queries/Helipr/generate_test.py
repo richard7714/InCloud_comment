@@ -10,9 +10,10 @@ import argparse
 from tqdm import tqdm 
 import matplotlib.pyplot as plt 
 from glob import glob
+import sys
 
 FILENAME = "pd_northing_easting.csv"
-POINTCLOUD_FOLS = "Ouster"
+POINTCLOUD_FOLS = "lidar"
 
 def output_to_file(output, save_folder, filename):
     file_path = os.path.join(save_folder, filename)
@@ -31,11 +32,17 @@ def construct_query_and_database_sets(folder, save_folder, eval_thresh, time_thr
     for index, row in df_locations.iterrows():
         database[len(database.keys())] = {'query': row['file'], 'northing': row['northing'],
                                                 'easting': row['easting'], 'timestamp': row['timestamp']}
-    filename = f'{os.path.basename(folder)}_evaluation_database.pickle'
+    
+    print("folder", folder)
+    
+    LiDAR = folder.split('/')[-2]
+    
+    print("LiDAR", LiDAR)
+    
+    print("basename", os.path.basename(folder))
+        
+    filename = f'{LiDAR}_{os.path.basename(folder)}_evaluation_database.pickle'
     output_to_file(database, save_folder, filename)
-
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Baseline training dataset')
@@ -55,6 +62,7 @@ if __name__ == '__main__':
 
     
     all_folders = sorted([x for x in glob(os.path.join(base_path, '*', '*')) if 'Sejong' not in x])
+    
     for folder in all_folders:
         construct_query_and_database_sets(
             folder = folder,

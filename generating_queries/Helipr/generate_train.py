@@ -15,8 +15,9 @@ import matplotlib.pyplot as plt
 
 FILENAME = "pd_northing_easting.csv"
 POINTCLOUD_FOLS = "lidar"
-ENVS = ['Aeva','Avia','Ouster','Velodyne']
-RUNS = ['01']
+# ENVS = ['Aeva','Avia','Ouster','Velodyne']
+ENVS = ['Aeva','Ouster','Velodyne']
+RUNS = ['Town1']
 
 
 def construct_query_dict(df_centroids, save_folder, filename, ind_nn_r, ind_r_r):
@@ -54,8 +55,6 @@ def construct_query_dict(df_centroids, save_folder, filename, ind_nn_r, ind_r_r)
 
     print("Done ", filename)
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Baseline training dataset')
     parser.add_argument('--dataset_root', type=str, required=True, help='Dataset root folder')
@@ -74,7 +73,7 @@ if __name__ == '__main__':
 
 
     for ENV in ENVS:
-        folders = [f'{ENV}_{RUN}' for RUN in RUNS]
+        folders = [f'{RUN}' for RUN in RUNS]
         df_train = pd.DataFrame(columns=['file', 'northing', 'easting'])
         for folder in folders:
             df_locations = pd.read_csv(os.path.join(base_path, ENV, folder, FILENAME), sep = ',')
