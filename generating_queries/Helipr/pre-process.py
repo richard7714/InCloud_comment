@@ -9,6 +9,9 @@ from glob import glob
 import multiprocessing as mp 
 import sys
 
+# pip3 install --upgrade git+https://github.com/klintan/pypcd.git
+from pypcd import pypcd
+
 np.random.seed(0)
 
 def remove_ground_plane(xyzr):
@@ -91,9 +94,21 @@ os_data_format = {
 
 def process_pointcloud(ARGS):
     pc_path, source_dir, save_dir,env = ARGS 
- 
-    scan = np.fromfile(pc_path, dtype=os_data_format[env])
-    xyzr = np.stack((scan['x'], scan['y'], scan['z'], scan['reflectivity' if env in ['Aeva','Avia'] else 'intensity']), axis = -1)
+    
+    # pcd file
+    if env in ['Aeva','Avia']:
+        scan = pypcd.PointCloud.from_path(pc_path)        
+
+        np_x = (np.array(scan.pc_data['x'], dtype=np.float32)).astype(np.float32)
+        np_y = (np.array(scan.pc_data['y'], dtype=np.float32)).astype(np.float32)
+        np_z = (np.array(scan.pc_data['z'], dtype=np.float32)).astype(np.float32)
+        np_r = (np.array(scan.pc_data['reflectivity'], dtype=np.float32)).astype(np.float32)
+        xyzr = np.transpose(np.vstack((np_x, np_y, np_z, np_r)))
+        
+    # bin file
+    else: 
+        scan = np.fromfile(pc_path, dtype=os_data_format[env])
+        xyzr = np.stack((scan['x'], scan['y'], scan['z'], scan['intensity']), axis = -1)
         
     # xyzr = np.fromfile(pc_path, dtype = np.float32).reshape(-1,4)
     if len(xyzr) == 0:
@@ -106,7 +121,7 @@ def multiprocessing_preprocessing(run, source_dir, save_dir,env):
     # Prepare inputs 
     clouds_raw = sorted(glob(os.path.join(run, 'lidar', '*')))
     ARGS = [[c, source_dir, save_dir,env] for c in clouds_raw]
-
+        
     # Multiprocessing the pre-processing 
     with mp.Pool(32) as p:
         _ = list(tqdm(p.imap(process_pointcloud, ARGS), total = len(ARGS)))
@@ -114,6 +129,7 @@ def multiprocessing_preprocessing(run, source_dir, save_dir,env):
 def global_csv_to_northing_easting(csv_path, source_dir, save_dir):
     df = pd.DataFrame(columns = ['timestamp', 'northing', 'easting'])
     scan_timestamps = sorted([x.split('.')[0] for x in os.listdir(os.path.join(os.path.dirname(csv_path), 'lidar'))])
+        
     with open(csv_path, 'r') as f:
         reader = csv.reader(f, delimiter = ',')
         for idx, row in tqdm(enumerate(reader)):
@@ -128,7 +144,8 @@ def global_csv_to_northing_easting(csv_path, source_dir, save_dir):
 
 def process_MulRan(root, save_dir):
     # environments = ['Aeva', 'Avia','Ouster','Velodyne'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
-    environments = ['Velodyne'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+    environments = ['Aeva','Avia'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
+    # environments = ['Ouster'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
 
     # environments = ['DCC_01', 'RiverSide_01'] # KAIST and Sejong not used, but can edit this to pre-process them as well 
     for env in environments:

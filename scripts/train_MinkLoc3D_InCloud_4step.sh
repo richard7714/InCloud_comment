@@ -10,7 +10,7 @@
 # conda activate MinkLoc3D # Replace with name of your environment
 
 _ROOT='/home/ma/git/incloud_comment' # Replace with root of your MinkLoc3D 
-_SAVEDIR="${_ROOT}/results/Incloud_helipr" # Replace with your save root 
+_SAVEDIR="${_ROOT}/results/Incloud_helipr_30" # Replace with your save root 
 
 export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 export PYTHONPATH=$PYTHONPATH:$_ROOT
@@ -20,7 +20,7 @@ cd $_ROOT
 python3 training/train_incremental.py  \
     --initial_ckpt 'weights/minkloc3d_baseline.pth' \
     --initial_environment 'pickles/Ouster_train.pickle'  \
-    --incremental_environments 'pickles/Velodyne_train.pickle' 'pickles/Ouster_train.pickle' \
+    --incremental_environments 'pickles/Velodyne_train.pickle' \
     --config config/protocols/3-step_helipr.yaml \
     train.memory.num_pairs 256 \
     train.loss.incremental.name 'StructureAware' \

@@ -158,4 +158,8 @@ class TrainerIncremental:
             if self.debug and epoch > 2:
                 break 
 
+        # old_ckpt = torch.load('/home/ma/git/incloud_comment/results/Incloud_helipr/models/env_0.pth')
+        
+        # self.model_new.load_state_dict(old_ckpt)
+        
         return self.model_new

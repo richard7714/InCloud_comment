@@ -13,15 +13,15 @@ eval:
     },  
   }
   world_thresh: {
-    'Ouster': 25,
-    'Velodyne': 25,
+    'Ouster': 10,
+    'Velodyne': 10,
   }
   false_pos_thresh: {
-    'Ouster': -1,
-    'Velodyne': -1,
+    'Ouster': 20,
+    'Velodyne': 20,
   }
   time_thresh: {
-    'Ouster': -1,
-    'Velodyne': -1,
+    'Ouster': 30,
+    'Velodyne': 30,
   }
 

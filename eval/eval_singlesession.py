@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm 
 from eval.eval_utils import get_latent_vectors
 from torchpack.utils.config import configs 
+import sys
 
 
 def euclidean_distance(query, database):
@@ -12,7 +13,7 @@ def euclidean_distance(query, database):
 def cosine_dist(query, database):
     return np.array(1 - torch.einsum('D,ND->N', torch.tensor(query), torch.tensor(database)))
 
-def eval_singlesession(model, database, world_thresh, false_pos_thresh, time_thresh):
+def eval_singlesession(model,env, database, world_thresh, false_pos_thresh, time_thresh):
     # Get embeddings, timestamps,coords and start time 
     database_dict = pickle.load(open(database, 'rb'))
     embeddings = get_latent_vectors(model, database_dict) # N x D, in chronological order
@@ -49,16 +50,21 @@ def eval_singlesession(model, database, world_thresh, false_pos_thresh, time_thr
         # Sanity check time 
         if (query_timestamp - start_time - time_thresh) < 0:
             continue 
-        
+            
         # Build retrieval database 
+        # timestamp를 iteration하며 query_timestamp에서 time_thresh를 뺀것보다 큰 timestamp를 가진 index를 찾는다.
         tt = next(x[0] for x in enumerate(timestamps) if x[1] > (query_timestamp - time_thresh))
+
+        # 관측한 embedding과 해당 좌표
         seen_embeddings = embeddings[:tt+1] # Seen x D
         seen_coords = coords[:tt+1] # Seen x 2
 
+        # 관측한 embedding들과의 거리
         # Get distances in feat space and real world
         dist_seen_embedding = dist_func(query_embedding, seen_embeddings)
         dist_seen_world = euclidean_distance(query_coord, seen_coords)
-
+        
+        # world_thresh보다 작은 값이 있으면 revisit        
         # Check if re-visit
         if np.any(dist_seen_world < world_thresh):
             revisit = True 
@@ -71,17 +77,19 @@ def eval_singlesession(model, database, world_thresh, false_pos_thresh, time_thr
         top1_embed_dist = dist_seen_embedding[top1_idx]
         top1_world_dist = dist_seen_world[top1_idx]
 
+        # Embedding이 잘 뽑여서 정답을 맞췄다!
         if top1_world_dist < world_thresh:
             num_correct_loc += 1
-
+        
         # Evaluate top-1 candidate 
+        # Thresholding하며 PR curve 뽑는 과정
         for thresh_idx in range(num_thresholds):
             threshold = thresholds[thresh_idx]
 
             if top1_embed_dist < threshold: # Positive Prediction
                 if top1_world_dist < world_thresh:
                     num_true_positive[thresh_idx] += 1
-                elif top1_world_dist > configs.eval.false_positive_thresh:
+                elif top1_world_dist > configs.eval.false_pos_thresh[env]:
                     num_false_positive[thresh_idx] += 1
             else: # Negative Prediction
                 if not revisit:
