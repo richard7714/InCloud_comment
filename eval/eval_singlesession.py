@@ -123,9 +123,9 @@ def eval_singlesession(model,env, database, world_thresh, false_pos_thresh, time
             F1max = F1 
             thresh_max = thresholds[thresh_idx]
 
-    # print(f'Num Revisits : {num_revisits}')
-    # print(f'Num. Correct Locations : {num_correct_loc}')
-    # print(f'Recall@1: {recall_1}')
-    # print(f'F1max: {F1max}')
+    print(f'Num Revisits : {num_revisits}')
+    print(f'Num. Correct Locations : {num_correct_loc}')
+    print(f'Recall@1: {recall_1}')
+    print(f'F1max: {F1max}')
 
     return {'F1max': F1max, 'Recall@1': recall_1}

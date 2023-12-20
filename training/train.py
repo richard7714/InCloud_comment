@@ -14,8 +14,6 @@ from trainer import Trainer
 
 from torch.utils.tensorboard import SummaryWriter
 
-
-
 if __name__ == '__main__':
 
     # Repeatability 

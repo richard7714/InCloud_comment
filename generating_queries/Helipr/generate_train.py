@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 
 FILENAME = "pd_northing_easting.csv"
 POINTCLOUD_FOLS = "lidar"
-# ENVS = ['Aeva','Avia','Ouster','Velodyne']
-ENVS = ['Ouster','Velodyne']
+ENVS = ['Aeva','Avia','Ouster','Velodyne']
+# ENVS = ['Ouster','Velodyne']
 RUNS = ['Town1']
 
 

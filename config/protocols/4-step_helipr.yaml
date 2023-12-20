@@ -1,0 +1,49 @@
+eval:
+  initial_environment_result: {'Ouster': 0.5358744394618834}
+  environments: {
+    'Ouster': {
+      'stage_introduced': 0,
+      'database_files': ['pickles/Ouster/Ouster_Town1_evaluation_database.pickle'],
+      'query_files': [null],
+    },
+    # 'Ouster': {
+    #   'stage_introduced': 1,
+    #   'database_files': ['pickles/Ouster/Ouster_Town1_evaluation_database.pickle'],
+    #   'query_files': [null],
+    # },    
+    'Velodyne': {
+      'stage_introduced': 2,
+      'database_files': ['pickles/Velodyne/Velodyne_Town1_evaluation_database.pickle'],
+      'query_files': [null],
+    },  
+    'Aeva': {
+      'stage_introduced': 1,
+      'database_files': ['pickles/Aeva/Aeva_Town1_evaluation_database.pickle'],
+      'query_files': [null],
+    },  
+    # 'Avia': {
+    #   'stage_introduced': 3,
+    #   'database_files': ['pickles/Avia/Avia_Town1_evaluation_database.pickle'],
+    #   'query_files': [null],
+    # },  
+
+  }
+  world_thresh: {
+    'Ouster': 10,
+    'Velodyne': 10,
+    'Aeva': 10,
+    'Avia': 10,
+  }
+  false_pos_thresh: {
+    'Ouster': 20,
+    'Velodyne': 20,
+    'Aeva': 20,
+    'Avia': 20,    
+  }
+  time_thresh: {
+    'Ouster': 30,
+    'Velodyne': 30,
+    'Aeva' : 30,
+    'Avia' : 30,
+  }
+

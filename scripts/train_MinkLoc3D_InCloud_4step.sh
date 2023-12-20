@@ -10,20 +10,29 @@
 # conda activate MinkLoc3D # Replace with name of your environment
 
 _ROOT='/home/ma/git/incloud_comment' # Replace with root of your MinkLoc3D 
-_SAVEDIR="${_ROOT}/results/Incloud_helipr_30" # Replace with your save root 
+_YAML='4-step_helipr.yaml'
+_GPU=0
+########################################### Training Settings ################################################
+_batch_size=256
+# None, LwF, EWC, StructureAware
+_incremental_name='EWC'
+_SAVEDIR="${_ROOT}/results/Incloud_helipr_${_batch_size}_${_incremental_name}" # Replace with your save root 
+##############################################################################################################
 
 export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 export PYTHONPATH=$PYTHONPATH:$_ROOT
 cd $_ROOT
 
+    # --incremental_environments 'pickles/Velodyne/Velodyne_train.pickle' 'pickles/Aeva/Aeva_train.pickle' 'pickles/Avia/Avia_train.pickle'\
 # Replace --initial_environment and --incremental_environments args with your generated pickle files below 
-python3 training/train_incremental.py  \
-    --initial_ckpt 'weights/minkloc3d_baseline.pth' \
-    --initial_environment 'pickles/Ouster_train.pickle'  \
-    --incremental_environments 'pickles/Velodyne_train.pickle' \
-    --config config/protocols/3-step_helipr.yaml \
+CUDA_VISIBLE_DEVICES=$_GPU python3 training/train_incremental.py  \
+    --initial_ckpt 'weights/minkloc3d_ouster_none.pth' \
+    --initial_environment 'pickles/Ouster/Ouster_train.pickle'  \
+    --incremental_environments  'pickles/Aeva/Aeva_train.pickle' 'pickles/Velodyne/Velodyne_train.pickle'\
+    --config config/protocols/$_YAML \
+    train.batch_size $_batch_size \
     train.memory.num_pairs 256 \
-    train.loss.incremental.name 'StructureAware' \
+    train.loss.incremental.name $_incremental_name \
     train.loss.incremental.weight 110 \
     train.loss.incremental.adjust_weight True \
     save_dir $_SAVEDIR \
