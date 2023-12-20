@@ -2,7 +2,7 @@ save_dir: null
 debug: false
 data: 
   num_points: 4096
-  dataset_folder: /home/ma/git/project/iros2024/codes/incloud_comment/data
+  dataset_folder: /home/ma/git/incloud_comment
   aug_mode: 1
   pin_memory: false
 model: 
@@ -16,9 +16,9 @@ model:
   feature_size: 256
   normalize_embeddings: False
 train: 
-  num_workers: 4
-  batch_size: 16
-  batch_size_limit: 256
+  num_workers: 12
+  batch_size: 400
+  batch_size_limit: 400
   batch_expansion_rate: 1.4
   batch_expansion_th: 0.7
   memory:

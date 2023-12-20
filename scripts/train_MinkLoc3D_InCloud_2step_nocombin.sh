@@ -19,8 +19,8 @@ cd $_ROOT
 # Replace --initial_environment and --incremental_environments args with your generated pickle files below 
 python3 training/train_incremental.py  \
     --initial_ckpt 'weights/minkloc3d_baseline.pth' \
-    --initial_environment 'pickles/Ouster_train.pickle'  \
-    --incremental_environments 'pickles/Velodyne_train.pickle' 'pickles/Ouster_train.pickle' \
+    --initial_environment 'pickles/Oxford/Oxford_train_queries.pickle' \
+    --incremental_environments 'pickles/In-house/In-house_train_queries.pickle' \
     --config config/protocols/3-step_helipr.yaml \
     train.memory.num_pairs 256 \
     train.loss.incremental.name 'StructureAware' \

@@ -11,6 +11,8 @@ import pandas as pd
 def evaluate(model, env_idx):
     # Wrapper of other eval functions for incremental learning
     stats = {}
+    
+    # 
     for env in configs.eval.environments.keys():
         if configs.eval.environments[env]['stage_introduced'] <= env_idx or env_idx == -1: # Only eval on visited environments
             database_files = configs.eval.environments[env]['database_files']

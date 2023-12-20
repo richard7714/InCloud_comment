@@ -1,0 +1,27 @@
+eval:
+  initial_environment_result: {'Ouster': 0.0}
+  environments: {
+    'Ouster': {
+      'stage_introduced': 0,
+      'database_files': ['pickles/Ouster_Town1_evaluation_database.pickle'],
+      'query_files': [null],
+    },
+    'Velodyne': {
+      'stage_introduced': 1,
+      'database_files': ['pickles/Velodyne_Town1_evaluation_database.pickle'],
+      'query_files': [null],
+    },  
+  }
+  world_thresh: {
+    'Ouster': 25,
+    'Velodyne': 25,
+  }
+  false_pos_thresh: {
+    'Ouster': -1,
+    'Velodyne': -1,
+  }
+  time_thresh: {
+    'Ouster': -1,
+    'Velodyne': -1,
+  }
+

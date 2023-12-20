@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 FILENAME = "pd_northing_easting.csv"
 POINTCLOUD_FOLS = "lidar"
 # ENVS = ['Aeva','Avia','Ouster','Velodyne']
-ENVS = ['Aeva','Ouster','Velodyne']
+ENVS = ['Ouster','Velodyne']
 RUNS = ['Town1']
 
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Baseline training dataset')
     parser.add_argument('--dataset_root', type=str, required=True, help='Dataset root folder')
     parser.add_argument('--pos_thresh', type = int, default = 10, help = 'Threshold for positive examples')
-    parser.add_argument('--neg_thresh', type = int, default = 20, help = 'Threshold for negative examples')
+    parser.add_argument('--neg_thresh', type = int, default = 50, help = 'Threshold for negative examples')
     parser.add_argument('--file_extension', type = str, default = '.npy', help = 'File extension expected')
     parser.add_argument('--save_folder', type = str, required = True, help = 'Folder to save pickle files to')
     args = parser.parse_args()

@@ -20,8 +20,6 @@ def eval_singlesession(model, database, world_thresh, false_pos_thresh, time_thr
     coords = np.array([[database_dict[k]['easting'],database_dict[k]['northing']] for k in range(len(database_dict.keys()))])
     start_time = timestamps[0]
 
-
-
     # Thresholds, other trackers
     thresholds = np.linspace(configs.eval.thresh_min, configs.eval.thresh_max, configs.eval.num_thresholds) # 0, 1, 1000 by default, TODO remove later
     num_thresholds = len(thresholds)
